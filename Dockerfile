@@ -19,8 +19,5 @@ WORKDIR /app
 # Copy the published app from the build stage
 COPY --from=build /app/publish .
 
-# Copy the .env file from the build context root
-COPY .env .
-
 EXPOSE 80
 ENTRYPOINT ["dotnet", "RadensuasoTodo.Api.dll"]
