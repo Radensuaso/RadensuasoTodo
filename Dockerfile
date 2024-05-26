@@ -2,13 +2,13 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy the solution file and restore any dependencies
-COPY ../RadensuasoTodo.sln .
-COPY RadensuasoTodo.Api.csproj RadensuasoTodo.Api/
-RUN dotnet restore RadensuasoTodo.sln
+# Copy the solution file and project file(s)
+COPY RadensuasoTodo.sln .
+COPY RadensuasoTodo.Api/RadensuasoTodo.Api.csproj RadensuasoTodo.Api/
+RUN dotnet restore
 
-# Copy the entire project and build the app
-COPY . RadensuasoTodo.Api/
+# Copy the entire project and the .env file
+COPY . .
 WORKDIR /src/RadensuasoTodo.Api
 RUN dotnet publish -c Release -o /app/publish
 
@@ -16,5 +16,6 @@ RUN dotnet publish -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
+COPY --from=build /src/.env .env
 EXPOSE 80
 ENTRYPOINT ["dotnet", "RadensuasoTodo.Api.dll"]

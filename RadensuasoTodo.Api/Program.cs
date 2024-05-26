@@ -4,11 +4,13 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using RadensuasoTodo.Api.Models;
 using DotNetEnv;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load environment variables from .env file
-DotNetEnv.Env.Load();
+// Load environment variables from .env file in the root directory
+string rootPath = Directory.GetCurrentDirectory();
+DotNetEnv.Env.Load(Path.Combine(rootPath, ".env"));
 
 // Read connection string from environment variables
 var connectionString = $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
