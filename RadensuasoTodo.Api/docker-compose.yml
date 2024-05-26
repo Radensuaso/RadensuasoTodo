@@ -4,7 +4,6 @@ services:
   web:
     build:
       context: .
-      dockerfile: RadensuasoTodo.Api/Dockerfile
     ports:
       - "5000:80"
     environment:

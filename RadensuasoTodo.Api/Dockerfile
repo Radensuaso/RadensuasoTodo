@@ -3,9 +3,9 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy the solution file and restore any dependencies
-COPY *.sln .
-COPY *.csproj RadensuasoTodo.Api/
-RUN dotnet restore
+COPY ../RadensuasoTodo.sln .
+COPY RadensuasoTodo.Api.csproj RadensuasoTodo.Api/
+RUN dotnet restore RadensuasoTodo.sln
 
 # Copy the entire project and build the app
 COPY . RadensuasoTodo.Api/
