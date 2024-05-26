@@ -1,0 +1,78 @@
+# .NET Core
+bin/
+obj/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+*.sln.iml
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+[Bb]uild/
+[Bb]uild[Ll]og.*
+[Rr]estore[Bb]undle/
+
+# User-specific files
+*.rsuser
+*.suo
+*.sln*
+*.vscode/
+.vscode/
+
+# NuGet
+*.nupkg
+# NuGet packages
+packages/
+# Uncomment if necessary however generally it will be regenerated if needed
+#*.snupkg
+
+# Entity Framework
+*.edmx.sql
+
+# Include .env file
+.env
+
+# macOS
+.DS_Store
+
+# Windows image file caches
+Thumbs.db
+
+# Windows shortcuts
+*.lnk
+
+# Rider
+.idea/
+*.sln.iml
+
+# ReSharper
+_ReSharper*/
+*_ReSharper.Caches
+*.DotSettings.user
+JetBrains.ReSharper.*.dotSettings
+
+# Logs
+*.log
+
+# Application Insights
+ApplicationInsights.config
+ApplicationInsights.config.*
+
+# DotNet
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# StyleCop
+StyleCopReport.xml
