@@ -7,7 +7,7 @@ using RadensuasoTodo.Api.Models;
 
 #nullable disable
 
-namespace TodoApp.Api.Migrations
+namespace RadensuasoTodo.Api.Migrations
 {
     [DbContext(typeof(TodoContext))]
     partial class TodoContextModelSnapshot : ModelSnapshot
