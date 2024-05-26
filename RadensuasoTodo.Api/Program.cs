@@ -8,8 +8,8 @@ using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load environment variables from .env file in the root directory
-string rootPath = Directory.GetCurrentDirectory();
+// Load environment variables from .env file in the parent directory
+string rootPath = Directory.GetParent(Directory.GetCurrentDirectory()).FullName;
 DotNetEnv.Env.Load(Path.Combine(rootPath, ".env"));
 
 // Read connection string from environment variables
