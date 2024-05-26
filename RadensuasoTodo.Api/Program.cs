@@ -65,11 +65,12 @@ var frontendUrls = Environment.GetEnvironmentVariable("FRONTEND_URL") ?? throw n
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
-        builder =>
+        policy =>
         {
-            builder.WithOrigins(frontendUrls.Split(","))
+            policy.WithOrigins(frontendUrls.Split(","))
                    .AllowAnyHeader()
-                   .AllowAnyMethod();
+                   .AllowAnyMethod()
+                   .AllowCredentials();  // If using cookies or authorization headers
         });
 });
 
