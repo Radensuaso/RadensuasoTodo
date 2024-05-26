@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   web:
@@ -6,18 +6,18 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:80"
+      - "5001:80"
     env_file:
       - .env
     depends_on:
       - database
-    entrypoint:
+    entrypoint: 
       - /bin/sh
       - -c
       - |
         set -e
-        # Apply migrations
-        dotnet ef database update --no-build --project /src/RadensuasoTodo.Api/RadensuasoTodo.Api.csproj --startup-project /src/RadensuasoTodo.Api/RadensuasoTodo.Api.csproj
+        export PATH="$PATH:/root/.dotnet/tools"
+        dotnet ef database update --project /src/RadensuasoTodo.Api/RadensuasoTodo.Api.csproj --startup-project /src/RadensuasoTodo.Api/RadensuasoTodo.Api.csproj
         dotnet /app/RadensuasoTodo.Api.dll
 
   database:
@@ -27,7 +27,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
 

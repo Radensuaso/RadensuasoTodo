@@ -1,13 +1,19 @@
-# Use the official .NET SDK image to build the app
+# Use the official .NET SDK image to build and publish the app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy the solution file and project file(s)
+# Install EF Core CLI tools globally
+RUN dotnet tool install -g dotnet-ef
+
+# Add the dotnet tools to PATH
+ENV PATH="$PATH:/root/.dotnet/tools"
+
+# Copy the solution file and restore any dependencies
 COPY RadensuasoTodo.sln .
 COPY RadensuasoTodo.Api/*.csproj RadensuasoTodo.Api/
-RUN dotnet restore RadensuasoTodo.sln
+RUN dotnet restore
 
-# Copy the entire project and the .env file
+# Copy the entire project and build the app
 COPY . .
 WORKDIR /src/RadensuasoTodo.Api
 RUN dotnet publish -c Release -o /app/publish
