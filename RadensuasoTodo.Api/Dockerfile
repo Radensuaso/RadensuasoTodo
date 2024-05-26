@@ -8,7 +8,7 @@ COPY RadensuasoTodo.Api/*.csproj RadensuasoTodo.Api/
 RUN dotnet restore
 
 # Copy the entire project and build the app
-COPY RadensuasoTodo.Api/. RadensuasoTodo.Api/
+COPY . RadensuasoTodo.Api/
 WORKDIR /src/RadensuasoTodo.Api
 RUN dotnet publish -c Release -o /app/publish
 
