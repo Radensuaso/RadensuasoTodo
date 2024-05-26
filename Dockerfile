@@ -3,7 +3,6 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy the solution file and project file(s)
-COPY RadensuasoTodo.sln .
 COPY RadensuasoTodo.Api/RadensuasoTodo.Api.csproj RadensuasoTodo.Api/
 RUN dotnet restore
 
