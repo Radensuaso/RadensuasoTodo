@@ -4,7 +4,7 @@ WORKDIR /src
 
 # Copy the solution file and restore any dependencies
 COPY *.sln .
-COPY RadensuasoTodo.Api/*.csproj RadensuasoTodo.Api/
+COPY *.csproj RadensuasoTodo.Api/
 RUN dotnet restore
 
 # Copy the entire project and build the app
