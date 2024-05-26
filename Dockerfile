@@ -2,9 +2,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy the solution file and project file(s)
-COPY RadensuasoTodo.Api/RadensuasoTodo.Api.csproj RadensuasoTodo.Api/
-RUN dotnet restore
+# Copy the solution file and restore any dependencies
+COPY RadensuasoTodo.sln .
+COPY RadensuasoTodo.Api/*.csproj RadensuasoTodo.Api/
+RUN dotnet restore RadensuasoTodo.sln
 
 # Copy the entire project and the .env file
 COPY . .
