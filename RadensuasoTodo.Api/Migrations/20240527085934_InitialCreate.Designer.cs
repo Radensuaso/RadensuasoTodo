@@ -11,7 +11,7 @@ using RadensuasoTodo.Api.Models;
 namespace RadensuasoTodo.Api.Migrations
 {
     [DbContext(typeof(TodoContext))]
-    [Migration("20240526214226_InitialCreate")]
+    [Migration("20240527085934_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

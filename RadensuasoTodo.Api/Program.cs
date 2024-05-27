@@ -3,17 +3,23 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using RadensuasoTodo.Api.Models;
-using DotNetEnv;
-using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load environment variables from .env file in the parent directory
-string rootPath = Directory.GetParent(Directory.GetCurrentDirectory()).FullName;
-DotNetEnv.Env.Load(Path.Combine(rootPath, ".env"));
+// Load environment variables from .env file
+string envPath = Path.Combine(Directory.GetCurrentDirectory(), "..", ".env");
+if (File.Exists(envPath))
+{
+    DotNetEnv.Env.Load(envPath);
+}
+else
+{
+    Console.WriteLine("Warning: The .env file was not found at the expected location.");
+}
 
 // Read connection string from environment variables
 var connectionString = $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
+                      $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
                       $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
                       $"Username={Environment.GetEnvironmentVariable("DB_USERNAME")};" +
                       $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}";

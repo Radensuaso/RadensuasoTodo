@@ -2,9 +2,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Install EF Core CLI tools globally
-RUN dotnet tool install -g dotnet-ef
-
 # Add the dotnet tools to PATH
 ENV PATH="$PATH:/root/.dotnet/tools"
 
