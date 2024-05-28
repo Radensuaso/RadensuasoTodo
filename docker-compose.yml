@@ -6,20 +6,12 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5001:80" # Adjust this if necessary for your production environment
+      - "5001:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_NAME=${DB_NAME}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
+      - MONGO_CONNECTION_STRING=${MONGO_CONNECTION_STRING}
+      - MONGO_DATABASE=${MONGO_DATABASE}
       - JWT_KEY=${JWT_KEY}
       - JWT_ISSUER=${JWT_ISSUER}
       - JWT_AUDIENCE=${JWT_AUDIENCE}
       - FRONTEND_URL=${FRONTEND_URL}
-    depends_on:
-      - database
-
-volumes:
-  postgres-data:

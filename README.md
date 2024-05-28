@@ -4,9 +4,9 @@ Hello Welcome to the back-end of my Todo app
 
 ## Technologies
 
+- MongoDB
 - .NET Core 8
 -C#
-- MongoDB
 
 You can visit it here: https://radensuaso-todo-client.onrender.com
 
