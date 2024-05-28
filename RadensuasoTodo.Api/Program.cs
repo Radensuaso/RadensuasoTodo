@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
 using System.Text;
 using RadensuasoTodo.Api.Models;
 
@@ -23,23 +23,17 @@ else
     Console.WriteLine("Warning: The .env file was not found at the expected location.");
 }
 
-// Read connection string from environment variables
-var connectionString = $"Host={Environment.GetEnvironmentVariable("DB_HOST")};" +
-                      $"Port={Environment.GetEnvironmentVariable("DB_PORT")};" +
-                      $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
-                      $"Username={Environment.GetEnvironmentVariable("DB_USERNAME")};" +
-                      $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}";
+// Read MongoDB connection string from environment variables
+var mongoConnectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING") ?? throw new ArgumentNullException("MONGO_CONNECTION_STRING must be set");
+var databaseName = Environment.GetEnvironmentVariable("MONGO_DATABASE") ?? throw new ArgumentNullException("MONGO_DATABASE must be set");
 
-builder.Services.AddDbContext<TodoContext>(options =>
-{
-    options.UseNpgsql(connectionString);
+// Configure MongoDB
+var mongoClient = new MongoClient(mongoConnectionString);
+var mongoDatabase = mongoClient.GetDatabase(databaseName);
+builder.Services.AddSingleton(mongoDatabase);
 
-    // Enable sensitive data logging only in Development environment
-    if (builder.Environment.IsDevelopment())
-    {
-        options.EnableSensitiveDataLogging();
-    }
-});
+// Ensure collections and indexes
+EnsureIndexes(mongoDatabase);
 
 // Configure JWT authentication
 var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? throw new ArgumentNullException("JWT_KEY must be set");
@@ -96,6 +90,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage(); // Ensure this is enabled in development
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
@@ -112,3 +107,15 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
+void EnsureIndexes(IMongoDatabase database)
+{
+    var userCollection = database.GetCollection<User>("Users");
+    var todoItemsCollection = database.GetCollection<TodoItem>("TodoItems");
+
+    var userIndexes = Builders<User>.IndexKeys.Ascending(u => u.Username);
+    userCollection.Indexes.CreateOne(new CreateIndexModel<User>(userIndexes));
+
+    var todoItemIndexes = Builders<TodoItem>.IndexKeys.Ascending(t => t.UserId);
+    todoItemsCollection.Indexes.CreateOne(new CreateIndexModel<TodoItem>(todoItemIndexes));
+}

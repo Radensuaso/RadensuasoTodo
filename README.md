@@ -6,7 +6,7 @@ Hello Welcome to the back-end of my Todo app
 
 - .NET Core 8
 -C#
-- Postgres
+- MongoDB
 
 You can visit it here: https://radensuaso-todo-client.onrender.com
 

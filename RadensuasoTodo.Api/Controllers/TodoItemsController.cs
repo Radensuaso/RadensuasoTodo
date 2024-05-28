@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using RadensuasoTodo.Api.Models;
 
 namespace RadensuasoTodo.Api.Controllers
@@ -10,12 +10,12 @@ namespace RadensuasoTodo.Api.Controllers
     [Authorize]
     public class TodoItemsController : ControllerBase
     {
-        private readonly TodoContext _context;
+        private readonly IMongoCollection<TodoItem> _todoItemsCollection;
         private readonly ILogger<TodoItemsController> _logger;
 
-        public TodoItemsController(TodoContext context, ILogger<TodoItemsController> logger)
+        public TodoItemsController(IMongoDatabase database, ILogger<TodoItemsController> logger)
         {
-            _context = context;
+            _todoItemsCollection = database.GetCollection<TodoItem>("TodoItems");
             _logger = logger;
         }
 
@@ -25,30 +25,30 @@ namespace RadensuasoTodo.Api.Controllers
         {
             var userIdClaim = User.FindFirst("userId")?.Value;
 
-            if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim))
             {
                 _logger.LogWarning("Invalid User ID format in claims.");
                 return Unauthorized("Invalid User ID format in claims.");
             }
 
-            _logger.LogInformation("Fetching Todo items for user: {UserId}", userId);
-            var todoItems = await _context.TodoItems.Where(todo => todo.UserId == userId).ToListAsync();
+            _logger.LogInformation("Fetching Todo items for user: {UserId}", userIdClaim);
+            var todoItems = await _todoItemsCollection.Find(todo => todo.UserId == userIdClaim).ToListAsync();
             return todoItems;
         }
 
         // GET: api/TodoItems/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<TodoItem>> GetTodoItem(int id)
+        public async Task<ActionResult<TodoItem>> GetTodoItem(string id)
         {
             var userIdClaim = User.FindFirst("userId")?.Value;
-            if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim))
             {
                 _logger.LogWarning("Invalid User ID format in claims.");
                 return Unauthorized("Invalid User ID format in claims.");
             }
 
-            _logger.LogInformation("Fetching Todo item {TodoId} for user: {UserId}", id, userId);
-            var todoItem = await _context.TodoItems.SingleOrDefaultAsync(todo => todo.Id == id && todo.UserId == userId);
+            _logger.LogInformation("Fetching Todo item {TodoId} for user: {UserId}", id, userIdClaim);
+            var todoItem = await _todoItemsCollection.Find(todo => todo.Id == id && todo.UserId == userIdClaim).FirstOrDefaultAsync();
 
             if (todoItem == null)
             {
@@ -61,42 +61,31 @@ namespace RadensuasoTodo.Api.Controllers
 
         // PUT: api/TodoItems/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTodoItem(int id, TodoItem todoItem)
+        public async Task<IActionResult> PutTodoItem(string id, TodoItem todoItem)
         {
             var userIdClaim = User.FindFirst("userId")?.Value;
-            if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim))
             {
                 _logger.LogWarning("Invalid User ID format in claims.");
                 return Unauthorized("Invalid User ID format in claims.");
             }
 
-            if (id != todoItem.Id || todoItem.UserId != userId)
+            if (id != todoItem.Id || todoItem.UserId != userIdClaim)
             {
-                _logger.LogWarning("Bad request for updating Todo item: {TodoId} for user: {UserId}", id, userId);
+                _logger.LogWarning("Bad request for updating Todo item: {TodoId} for user: {UserId}", id, userIdClaim);
                 return BadRequest();
             }
 
-            _context.Entry(todoItem).State = EntityState.Modified;
+            var filter = Builders<TodoItem>.Filter.Eq("Id", id);
+            var updateResult = await _todoItemsCollection.ReplaceOneAsync(filter, todoItem);
 
-            try
+            if (updateResult.MatchedCount == 0)
             {
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("Todo item {TodoId} updated for user: {UserId}", id, userId);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TodoItemExists(id))
-                {
-                    _logger.LogWarning("Todo item not found during update: {TodoId}", id);
-                    return NotFound();
-                }
-                else
-                {
-                    _logger.LogError("Concurrency error when updating Todo item: {TodoId}", id);
-                    throw;
-                }
+                _logger.LogWarning("Todo item not found during update: {TodoId}", id);
+                return NotFound();
             }
 
+            _logger.LogInformation("Todo item {TodoId} updated for user: {UserId}", id, userIdClaim);
             return NoContent();
         }
 
@@ -105,49 +94,42 @@ namespace RadensuasoTodo.Api.Controllers
         public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem todoItem)
         {
             var userIdClaim = User.FindFirst("userId")?.Value;
-            if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim))
             {
                 _logger.LogWarning("Invalid User ID format in claims.");
                 return Unauthorized("Invalid User ID format in claims.");
             }
 
-            todoItem.UserId = userId;
+            todoItem.UserId = userIdClaim;
 
-            _context.TodoItems.Add(todoItem);
-            await _context.SaveChangesAsync();
+            await _todoItemsCollection.InsertOneAsync(todoItem);
 
-            _logger.LogInformation("Todo item {TodoId} created for user: {UserId}", todoItem.Id, userId);
+            _logger.LogInformation("Todo item {TodoId} created for user: {UserId}", todoItem.Id, userIdClaim);
             return CreatedAtAction("GetTodoItem", new { id = todoItem.Id }, todoItem);
         }
 
         // DELETE: api/TodoItems/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTodoItem(int id)
+        public async Task<IActionResult> DeleteTodoItem(string id)
         {
             var userIdClaim = User.FindFirst("userId")?.Value;
-            if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+            if (string.IsNullOrEmpty(userIdClaim))
             {
                 _logger.LogWarning("Invalid User ID format in claims.");
                 return Unauthorized("Invalid User ID format in claims.");
             }
 
-            var todoItem = await _context.TodoItems.SingleOrDefaultAsync(todo => todo.Id == id && todo.UserId == userId);
-            if (todoItem == null)
+            var filter = Builders<TodoItem>.Filter.Eq("Id", id) & Builders<TodoItem>.Filter.Eq("UserId", userIdClaim);
+            var deleteResult = await _todoItemsCollection.DeleteOneAsync(filter);
+
+            if (deleteResult.DeletedCount == 0)
             {
                 _logger.LogWarning("Todo item not found: {TodoId}", id);
                 return NotFound();
             }
 
-            _context.TodoItems.Remove(todoItem);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("Todo item {TodoId} deleted for user: {UserId}", id, userId);
+            _logger.LogInformation("Todo item {TodoId} deleted for user: {UserId}", id, userIdClaim);
             return NoContent();
-        }
-
-        private bool TodoItemExists(int id)
-        {
-            return _context.TodoItems.Any(e => e.Id == id);
         }
     }
 }
